@@ -10,32 +10,10 @@
   "homepage": "https://github.com/natserract/ai/tree/main/workflows/act-sdlc",
   "repository": "https://github.com/natserract/ai",
   "license": "UNLICENSED",
-  "keywords": ["sdlc", "linear", "translation", "workflow"],
-  "userConfig": {
-    "auto_translate": {
-      "type": "boolean",
-      "title": "Auto-translate Linear issues",
-      "description": "When on, pasting a Linear issue URL into a prompt translates the issue into your translation language first.",
-      "default": false
-    },
-    "translate_language": {
-      "type": "string",
-      "title": "Translation language",
-      "description": "Country code of the target language: id (Indonesian), in (Hindi), my (Malay), jp (Japanese), and more. Run translate.mjs --list-languages for the full list.",
-      "default": "id"
-    },
-    "translate_provider": {
-      "type": "string",
-      "title": "Translation provider",
-      "description": "Model provider used for translation. Set its API key with /act-sdlc:setup.",
-      "options": ["gemini", "claude", "openai", "openrouter"],
-      "default": "gemini"
-    },
-    "translate_model": {
-      "type": "string",
-      "title": "Translation model",
-      "description": "Model ID override. Leave empty for the provider default (required for openai and openrouter).",
-      "default": ""
-    }
-  }
+  "keywords": [
+    "sdlc",
+    "linear",
+    "translation",
+    "workflow"
+  ]
 }

@@ -1,11 +1,11 @@
-// The plugin's .env lives at the plugin root (workflows/act-sdlc/.env).
+// API keys live in the developer's profile (~/.config/act-sdlc/.env), so they survive plugin updates.
 // Variables already set in the shell win over the file.
 
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
+import { profileDir } from "./config.mjs";
 
-export const ENV_FILE = join(dirname(dirname(fileURLToPath(import.meta.url))), ".env");
+export const ENV_FILE = join(profileDir(), ".env");
 
 export function loadEnv() {
   if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);

@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Set up the act-sdlc plugin's translation API key in its .env file and verify it works. Use for /act-sdlc:setup, "setup act-sdlc", "set my Gemini key", or when translate-issue fails because an API key is missing.
+description: Set up your translation API key in your act-sdlc profile (~/.config/act-sdlc/.env) and verify it works. Use for /act-sdlc:setup, "setup act-sdlc", "set my Gemini key", or when translate-issue fails because an API key is missing.
 argument-hint: "[provider] [KEY=VALUE]"
 allowed-tools: Bash(node:*)
 ---
@@ -9,7 +9,7 @@ allowed-tools: Bash(node:*)
 
 Arguments: `$ARGUMENTS`
 
-The plugin reads API keys from `${CLAUDE_PLUGIN_ROOT}/.env`. Keys exported in the shell take precedence over that file.
+API keys live in your developer profile at `~/.config/act-sdlc/.env` (under `$XDG_CONFIG_HOME` if set). It's never committed, and it survives plugin updates. Keys exported in the shell take precedence over that file.
 
 ## 1. Show current state
 
@@ -17,7 +17,11 @@ The plugin reads API keys from `${CLAUDE_PLUGIN_ROOT}/.env`. Keys exported in th
 node "${CLAUDE_PLUGIN_ROOT}/scripts/setup.mjs" --status
 ```
 
-The provider to set up is the one named in the arguments. Without one, use `${user_config.translate_provider}`, which is the provider translate-issue uses.
+The provider to set up is the one named in the arguments. Without one, use the configured provider, the one translate-issue uses:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/config.mjs" get translate.provider
+```
 
 ## 2. If its key is already set
 
@@ -45,7 +49,7 @@ Otherwise, don't ask for the key in chat. Give the user these two options and wa
    ```
    node "${CLAUDE_PLUGIN_ROOT}/scripts/setup.mjs"
    ```
-2. Or open `${CLAUDE_PLUGIN_ROOT}/.env`, which you can create from `.env.example` in the same directory, and fill in the key's line.
+2. Or create `~/.config/act-sdlc/.env` (template: `${CLAUDE_PLUGIN_ROOT}/.env.example`) and fill in the key's line, e.g. `GEMINI_API_KEY=...`.
 
 Tell them where to get a key: Gemini at https://aistudio.google.com/apikey, Claude at https://console.anthropic.com, OpenAI at https://platform.openai.com/api-keys, and OpenRouter at https://openrouter.ai/keys.
 
@@ -55,4 +59,5 @@ When they say they're done, run the step 2 check.
 
 Once the check passes, tell the user:
 - `/act-sdlc:translate-issue ACT-130` now works. No restart is needed, because the script reads `.env` on every run.
-- To turn auto-translate on, set `auto_translate` for the act-sdlc plugin in `/config`.
+- To turn auto-translate on, run `/act-sdlc:config set translate.auto true`.
+- To set up a project's `act/` folder, run `/act-sdlc:init` in that repo.

@@ -1,15 +1,17 @@
 #!/usr/bin/env node
-// Set up translation API keys in the plugin's .env file.
+// Set up translation API keys in the developer profile's .env (~/.config/act-sdlc/.env).
 //
 //   node setup.mjs                       interactive: pick a provider, paste the key (hidden), verify it
 //   node setup.mjs --status              show which keys are set and where they come from
 //   node setup.mjs --check [--provider]  call each configured provider to confirm its key works
 //   node setup.mjs --set NAME=VALUE      save one variable without prompting, then verify it
 
-import { chmod, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { dirname } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { parseArgs, parseEnv } from "node:util";
+import { loadConfig } from "./config.mjs";
 import { ENV_FILE, loadEnv } from "./env.mjs";
 import { PROVIDERS } from "./providers.mjs";
 
@@ -64,6 +66,7 @@ async function save(name, value) {
   const index = lines.findIndex((line) => line.match(/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=/)?.[1] === name);
   if (index === -1) lines.push(`${name}=${value}`);
   else lines[index] = `${name}=${value}`;
+  await mkdir(dirname(ENV_FILE), { recursive: true });
   await writeFile(ENV_FILE, `${lines.join("\n")}\n`);
   await chmod(ENV_FILE, 0o600);
   process.env[name] = value;
@@ -71,6 +74,15 @@ async function save(name, value) {
     console.log(`note: ${name} is also exported in your shell, and the shell value wins over .env.`);
   }
   console.log(`saved ${name} to ${ENV_FILE}`);
+}
+
+// The provider translate-issue would use here; a broken config file shouldn't block setup.
+function configuredProvider() {
+  try {
+    return loadConfig(process.cwd()).values["translate.provider"];
+  } catch {
+    return "gemini";
+  }
 }
 
 function providerFor(keyEnv) {
@@ -108,8 +120,9 @@ function askHidden(question) {
 
 async function interactive() {
   const names = Object.keys(PROVIDERS);
+  const fallback = configuredProvider();
   const rl = createInterface({ input: process.stdin, output: process.stdout });
-  const picked = (await rl.question(`Provider (${names.join("/")}) [gemini]: `)).trim() || "gemini";
+  const picked = (await rl.question(`Provider (${names.join("/")}) [${fallback}]: `)).trim() || fallback;
   rl.close();
   if (!PROVIDERS[picked]) throw new Error(`unknown provider "${picked}"`);
   const { keyEnv } = PROVIDERS[picked];
