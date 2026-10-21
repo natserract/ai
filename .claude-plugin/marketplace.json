@@ -1,0 +1,16 @@
+{
+  "name": "actual",
+  "owner": {
+    "name": "Actual",
+    "email": "alf@actu-al.co",
+    "url": "https://github.com/natserract/ai"
+  },
+  "description": "Actual's Claude Code plugins.",
+  "plugins": [
+    {
+      "name": "sdlc",
+      "source": "./workflows/sdlc",
+      "description": "Actual's development workflow for Claude Code: Linear issues, translation, and workflow commands."
+    }
+  ]
+}

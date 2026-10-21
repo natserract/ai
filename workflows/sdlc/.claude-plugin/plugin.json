@@ -1,0 +1,35 @@
+{
+  "name": "sdlc",
+  "displayName": "SDLC Workflows",
+  "version": "0.1.0",
+  "description": "Actual's development workflow for Claude Code: Linear issues, translation, and (soon) spec, ticket, and triage commands.",
+  "author": {
+    "name": "Actual",
+    "email": "alf@actu-al.co"
+  },
+  "homepage": "https://github.com/natserract/ai/tree/main/workflows/sdlc",
+  "repository": "https://github.com/natserract/ai",
+  "license": "UNLICENSED",
+  "keywords": ["sdlc", "linear", "translation", "workflow"],
+  "userConfig": {
+    "auto_translate": {
+      "type": "boolean",
+      "title": "Auto-translate Linear issues",
+      "description": "When on, pasting a Linear issue URL into a prompt translates the issue to Bahasa Indonesia first.",
+      "default": false
+    },
+    "translate_provider": {
+      "type": "string",
+      "title": "Translation provider",
+      "description": "Model provider used for translation. Its API key must be set in your shell environment.",
+      "options": ["gemini", "claude", "openai", "openrouter"],
+      "default": "gemini"
+    },
+    "translate_model": {
+      "type": "string",
+      "title": "Translation model",
+      "description": "Model ID override. Leave empty for the provider default (required for openai and openrouter).",
+      "default": ""
+    }
+  }
+}
