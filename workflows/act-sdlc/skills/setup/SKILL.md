@@ -1,11 +1,11 @@
 ---
 name: setup
-description: Set up the sdlc plugin's translation API key in its .env file and verify it works. Use for /sdlc:setup, "setup sdlc", "set my Gemini key", or when translate-issue fails because an API key is missing.
+description: Set up the act-sdlc plugin's translation API key in its .env file and verify it works. Use for /act-sdlc:setup, "setup act-sdlc", "set my Gemini key", or when translate-issue fails because an API key is missing.
 argument-hint: "[provider] [KEY=VALUE]"
 allowed-tools: Bash(node:*)
 ---
 
-# Set up the sdlc plugin
+# Set up the act-sdlc plugin
 
 Arguments: `$ARGUMENTS`
 
@@ -54,5 +54,5 @@ When they say they're done, run the step 2 check.
 ## 4. Finish
 
 Once the check passes, tell the user:
-- `/sdlc:translate-issue ACT-130` now works. No restart is needed, because the script reads `.env` on every run.
-- To turn auto-translate on, set `auto_translate` for the sdlc plugin in `/config`.
+- `/act-sdlc:translate-issue ACT-130` now works. No restart is needed, because the script reads `.env` on every run.
+- To turn auto-translate on, set `auto_translate` for the act-sdlc plugin in `/config`.

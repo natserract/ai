@@ -26,8 +26,8 @@ try {
       hookEventName: "UserPromptSubmit",
       additionalContext:
         `SDLC auto-translate is on. The prompt links Linear issue(s) ${list}. ` +
-        `Before other work, the sdlc:translate-issue skill runs once for each key (${list}), ` +
-        `producing .sdlc/issues/<KEY>.id.md. The skill skips issues whose translation is already current.`,
+        `Before other work, the act-sdlc:translate-issue skill runs once for each key (${list}), ` +
+        `in the configured translation language. The skill skips issues whose translation is already current.`,
     },
   }));
 } catch {

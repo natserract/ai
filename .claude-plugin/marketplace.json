@@ -8,8 +8,8 @@
   "description": "Actual's Claude Code plugins.",
   "plugins": [
     {
-      "name": "sdlc",
-      "source": "./workflows/sdlc",
+      "name": "act-sdlc",
+      "source": "./workflows/act-sdlc",
       "description": "Actual's development workflow for Claude Code: Linear issues, translation, and workflow commands."
     }
   ]

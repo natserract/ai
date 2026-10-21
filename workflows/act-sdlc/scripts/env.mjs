@@ -1,4 +1,4 @@
-// The plugin's .env lives at the plugin root (workflows/sdlc/.env).
+// The plugin's .env lives at the plugin root (workflows/act-sdlc/.env).
 // Variables already set in the shell win over the file.
 
 import { existsSync } from "node:fs";

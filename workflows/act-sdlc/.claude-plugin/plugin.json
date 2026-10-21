@@ -1,13 +1,13 @@
 {
-  "name": "sdlc",
-  "displayName": "SDLC Workflows",
+  "name": "act-sdlc",
+  "displayName": "ACT SDLC Workflows",
   "version": "0.1.0",
   "description": "Actual's development workflow for Claude Code: Linear issues, translation, and (soon) spec, ticket, and triage commands.",
   "author": {
     "name": "Actual",
     "email": "alf@actu-al.co"
   },
-  "homepage": "https://github.com/natserract/ai/tree/main/workflows/sdlc",
+  "homepage": "https://github.com/natserract/ai/tree/main/workflows/act-sdlc",
   "repository": "https://github.com/natserract/ai",
   "license": "UNLICENSED",
   "keywords": ["sdlc", "linear", "translation", "workflow"],
@@ -15,13 +15,19 @@
     "auto_translate": {
       "type": "boolean",
       "title": "Auto-translate Linear issues",
-      "description": "When on, pasting a Linear issue URL into a prompt translates the issue to Bahasa Indonesia first.",
+      "description": "When on, pasting a Linear issue URL into a prompt translates the issue into your translation language first.",
       "default": false
+    },
+    "translate_language": {
+      "type": "string",
+      "title": "Translation language",
+      "description": "Country code of the target language: id (Indonesian), in (Hindi), my (Malay), jp (Japanese), and more. Run translate.mjs --list-languages for the full list.",
+      "default": "id"
     },
     "translate_provider": {
       "type": "string",
       "title": "Translation provider",
-      "description": "Model provider used for translation. Its API key must be set in your shell environment.",
+      "description": "Model provider used for translation. Set its API key with /act-sdlc:setup.",
       "options": ["gemini", "claude", "openai", "openrouter"],
       "default": "gemini"
     },
