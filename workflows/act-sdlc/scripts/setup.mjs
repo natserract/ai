@@ -79,7 +79,7 @@ async function save(name, value) {
 // The provider translate-issue would use here; a broken config file shouldn't block setup.
 function configuredProvider() {
   try {
-    return loadConfig(process.cwd()).values["translate.provider"];
+    return loadConfig().values["translate.provider"];
   } catch {
     return "gemini";
   }

@@ -1,53 +1,39 @@
 # Configuration
 
-act-sdlc keeps configuration in two places:
-
-- **Your developer profile.** Personal settings and API keys that follow you to every project.
-- **The project's `act/` folder.** Settings the team shares for one repository, plus personal overrides for that repository. This folder is also where the project keeps what act-sdlc produces for it. Specs will live here too, in `act/openspec/`.
-
-## Your developer profile
+Everything act-sdlc keeps is on your machine, in two places, and **app repositories are never touched**:
 
 ```
-~/.config/act-sdlc/        # or $XDG_CONFIG_HOME/act-sdlc/
-  config.json              # your defaults for every project
-  .env                     # your API keys (permissions 600)
+~/.config/act-sdlc/         # your profile ($XDG_CONFIG_HOME/act-sdlc)
+  config.json               # your settings
+  .env                      # your API keys (permissions 600)
+
+~/.act/                     # your workspace ($ACT_HOME to move it)
+  openspec/                 # RFC drafts, validated with OpenSpec
+    config.yaml             # rules every draft follows (Call Graph Planning by default)
+    changes/<id>/           # one draft per issue
+  rfc/<KEY>.md              # English RFCs, as published to Linear
+  rfc/<KEY>.<lang>.md       # your translations of them (local only, never published)
+  issues/<KEY>.<lang>.md    # issue translations
 ```
 
-The profile is outside every repository and outside the plugin, so it's never committed and it survives plugin updates.
+The shared copy of each spec is the `RFC:` document on the Linear issue. See [lifecycle.md](lifecycle.md).
 
+- `/act-sdlc:init` creates the workspace.
 - `/act-sdlc:setup` writes `.env`.
 - `/act-sdlc:config set …` writes `config.json`.
 
-## The project's `act/` folder
-
-Create it once per repository with `/act-sdlc:init`:
-
-```
-act/
-  config.json          # team settings for this project       → commit
-  .gitignore           # keeps the personal files below out of git → commit
-  config.local.json    # your overrides for this project only   → gitignored
-  issues/              # issue translations (<KEY>.<lang>.md)    → gitignored
-```
-
-Personal files stay out of git through `act/.gitignore`, so you don't need to edit the project's root `.gitignore`.
-
-The plugin finds the project by walking up from the current directory. It stops at the first directory that contains `act/config.json` or `.git`, so commands work from any subdirectory.
-
 ## Which setting wins
 
-For each key, the first layer that sets it wins:
+For each key, the first one that's set wins:
 
-| # | Layer | Who it's for | Set with |
-| :- | :- | :- | :- |
-| 1 | Command flag, e.g. `--lang in` | One run | The command itself |
-| 2 | Env var, e.g. `SDLC_TRANSLATE_LANG=in` | One shell session | Your shell |
-| 3 | `act/config.local.json` | You, in this project | `/act-sdlc:config set <key> <value> --local` |
-| 4 | `act/config.json` | The team, in this project | `/act-sdlc:config set <key> <value> --project` |
-| 5 | `~/.config/act-sdlc/config.json` | You, in every project | `/act-sdlc:config set <key> <value>` (the default scope) |
-| 6 | Built-in default | Everyone | Nothing to set |
+| # | Source | Example |
+| :- | :- | :- |
+| 1 | Command flag | `--lang in` |
+| 2 | Env var | `SDLC_TRANSLATE_LANG=in claude` |
+| 3 | Your profile | `/act-sdlc:config set translate.language in` |
+| 4 | Built-in default | `id` |
 
-To see every key, its value, and the layer it came from, run:
+To see every key, its value, and where it came from, run:
 
 ```
 /act-sdlc:config show
@@ -61,40 +47,31 @@ To see every key, its value, and the layer it came from, run:
 | `translate.provider` | `gemini` | `SDLC_TRANSLATE_PROVIDER` | `gemini`, `claude`, `openai`, or `openrouter` |
 | `translate.model` | empty | `SDLC_TRANSLATE_MODEL` | Model ID override. Empty uses the provider's default. Required for `openai` and `openrouter` |
 | `translate.auto` | `false` | `SDLC_AUTO_TRANSLATE` | Translate automatically when a prompt contains a Linear issue URL |
+| `phases.lightLabels` | `Small Size` | `SDLC_LIGHT_LABELS` | Comma-separated Linear labels whose issues take the [light path](lifecycle.md#the-light-path) |
+| `phases.callGraph` | `true` | `SDLC_CALL_GRAPH` | Full-path RFCs must have a [Call Graph](call-graph.md). `false` drops the `/status` gate |
+| `start.skills` | empty | `SDLC_START_SKILLS` | Comma-separated skills `/start` invokes for every code task, in order: implementation skills first, review skills last. Example: `pstack:tdd,code-review` |
+| `plan.autoSplit` | `true` | `SDLC_PLAN_AUTO_SPLIT` | `/plan` creates decision and work sub-issues in Linear when an issue is too large. `false` shows the proposed map in chat only |
+| `rfc.publish` | `true` | `SDLC_RFC_PUBLISH` | `/to-spec` creates or updates the issue's `RFC:` document in Linear and adds a notification comment. `false` keeps RFCs local |
 
-`set` rejects unknown keys and invalid values, such as an unknown language code. If a config file has an unknown key, `show` prints a warning and the key is ignored.
+`set` rejects unknown keys and invalid values. If `config.json` contains an unknown key, `show` prints a warning and the key is ignored.
 
-API keys are not settings. Don't put them in any `config.json`, because `act/config.json` is committed. Keys belong in your profile `.env`; see [Set up an API key](translation.md#set-up-an-api-key).
+API keys are not settings: they belong in your profile `.env`. See [Set up an API key](translation.md#set-up-an-api-key).
 
-## Team settings versus personal settings
+## Team conventions
 
-Commit only **project facts** to `act/config.json`: things that are true for everyone working on the repository. For example, a project that always needs Japanese translations for its partner team:
+There are no team or per-repo settings files, so nothing lands in app repos. Teams agree on conventions in two places:
 
-```
-/act-sdlc:config set translate.language jp --project
-```
-
-Keep **personal preferences** in your profile, or in `config.local.json` to override a single project:
-
-```
-/act-sdlc:config set translate.language in            # my default everywhere
-/act-sdlc:config set translate.auto true              # auto-translate for me everywhere
-/act-sdlc:config set translate.provider claude --local  # just me, just this repo
-/act-sdlc:config unset translate.provider --local       # back to the next layer
-```
-
-`act/config.json` beats your profile. So when a team sets a key there, it applies to everyone on that project, unless someone overrides it in their own `config.local.json`.
+- **The RFC itself, in Linear:** what each issue will do, reviewed by everyone.
+- **Workspace rules:** the `rules:` and `context:` blocks in `~/.act/openspec/config.yaml` decide what every draft must contain. To share a convention, share the snippet; each developer pastes it into their own workspace. The defaults that `/act-sdlc:init` writes are the same for everyone.
 
 ## The config script
 
-`/act-sdlc:config` wraps `scripts/config.mjs`. You can run the script directly from any directory in a project:
+`/act-sdlc:config` wraps `scripts/config.mjs`:
 
 ```bash
 node <plugin>/scripts/config.mjs show
 node <plugin>/scripts/config.mjs get translate.language
-node <plugin>/scripts/config.mjs set translate.language in [--user|--project|--local]
-node <plugin>/scripts/config.mjs unset translate.language [--user|--project|--local]
-node <plugin>/scripts/config.mjs init
+node <plugin>/scripts/config.mjs set translate.language in
+node <plugin>/scripts/config.mjs unset translate.language
+node <plugin>/scripts/config.mjs init        # create ~/.act/
 ```
-
-`set --project` and `set --local` run `init` first, so `config.local.json` is always covered by `act/.gitignore` before it's written.

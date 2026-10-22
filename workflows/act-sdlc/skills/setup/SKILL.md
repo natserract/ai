@@ -60,4 +60,4 @@ When they say they're done, run the step 2 check.
 Once the check passes, tell the user:
 - `/act-sdlc:translate-issue ACT-130` now works. No restart is needed, because the script reads `.env` on every run.
 - To turn auto-translate on, run `/act-sdlc:config set translate.auto true`.
-- To set up a project's `act/` folder, run `/act-sdlc:init` in that repo.
+- To set up the RFC workspace (`~/.act/`), run `/act-sdlc:init` once.

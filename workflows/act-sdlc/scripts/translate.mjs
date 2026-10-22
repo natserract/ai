@@ -3,14 +3,15 @@
 // Usage: node translate.mjs [--in <src.md>] [--out <dst.md>] [--lang id] [--provider gemini] [--model <id>] [--force]
 //        node translate.mjs --list-languages
 // Without --in, the source Markdown is read from stdin. Without --out, the output goes to
-// <project>/act/issues/<key>.<lang>.md, using `key:` from the source frontmatter.
+// ~/.act/issues/<key>.<lang>.md (the workspace), using `key:` from the source frontmatter.
 // Language, provider, and model fall back to the layered config (see config.mjs).
 
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { dirname, join, relative } from "node:path";
+import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
-import { loadConfig, PROJECT_DIR } from "./config.mjs";
+import { loadConfig, workspaceDir } from "./config.mjs";
 import { loadEnv } from "./env.mjs";
 import { LANGUAGES, resolveLanguage } from "./languages.mjs";
 import { PROVIDERS, systemPrompt } from "./providers.mjs";
@@ -53,7 +54,7 @@ if (values["list-languages"]) {
 loadEnv();
 let config;
 try {
-  config = loadConfig(process.cwd());
+  config = loadConfig();
 } catch (err) {
   fail(err.message);
 }
@@ -75,15 +76,15 @@ const [frontmatter, body] = splitFrontmatter(source);
 
 const issueKey = field(frontmatter, "key");
 if (!values.out && !issueKey) fail("pass --out, or give the source a `key:` field in its frontmatter.");
-const out = values.out || join(config.root, PROJECT_DIR, "issues", `${issueKey}.${language.code}.md`);
-const shown = relative(process.cwd(), out) || out;
+const out = values.out || join(workspaceDir(), "issues", `${issueKey}.${language.code}.md`);
+const shown = out;
 
-// Skip when the existing translation was made from the same issue revision.
-const updatedAt = field(frontmatter, "updated_at");
-if (!values.force && updatedAt && existsSync(out)) {
+// Skip when the existing translation was made from exactly this source text and language.
+const sourceSha = createHash("sha256").update(`${language.code}\n${source}`).digest("hex").slice(0, 16);
+if (!values.force && existsSync(out)) {
   const [existing] = splitFrontmatter(await readFile(out, "utf8"));
-  if (field(existing, "updated_at") === updatedAt) {
-    console.log(`current: ${shown} (unchanged since ${updatedAt}; pass --force to redo)`);
+  if (field(existing, "source_sha") === sourceSha) {
+    console.log(`current: ${shown} (source unchanged; pass --force to redo)`);
     process.exit(0);
   }
 }
@@ -94,9 +95,8 @@ if (!key) fail(`${provider.keyEnv} is not set. Run /act-sdlc:setup.`);
 const translated = await provider.translate({ key, model, system: systemPrompt(language.name), text: body }).catch((err) => fail(err.message));
 if (!translated?.trim()) fail(`${providerName}/${model} returned an empty translation.`);
 
-const header = frontmatter
-  ? frontmatter.replace(/\n---\n$/, `\nlang: ${language.code}\ntranslated_by: ${providerName}/${model}\n---\n`)
-  : "";
+const meta = `lang: ${language.code}\ntranslated_by: ${providerName}/${model}\nsource_sha: ${sourceSha}\n`;
+const header = frontmatter ? frontmatter.replace(/\n---\n$/, `\n${meta}---\n`) : `---\n${meta}---\n\n`;
 await mkdir(dirname(out), { recursive: true });
 await writeFile(out, `${header}${translated.trim()}\n`);
 console.log(`${shown} (${language.name}, ${providerName}/${model})`);

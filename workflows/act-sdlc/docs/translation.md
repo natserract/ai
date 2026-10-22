@@ -1,10 +1,10 @@
 # Linear issue translation
 
-`/act-sdlc:translate-issue` reads a Linear issue (title, metadata, description, comments) through the Linear MCP and writes one file to the project: `act/issues/<KEY>.<lang>.md`. The language is chosen by country code and defaults to `id` (Bahasa Indonesia), so the default output is `act/issues/<KEY>.id.md`. The original stays in Linear and isn't saved.
+`/act-sdlc:translate-issue` reads a Linear issue (title, metadata, description, comments) through the Linear MCP and writes one file to your workspace: `~/.act/issues/<KEY>.<lang>.md`, outside every repo. The language is chosen by country code and defaults to `id` (Bahasa Indonesia), so the default output is `~/.act/issues/<KEY>.id.md`. The original stays in Linear and isn't saved.
 
 Claude fetches the issue and pipes it to the translator. A separate model does the translation through `scripts/translate.mjs`. Code, URLs, identifiers, and common technical terms are left in English.
 
-Run `/act-sdlc:init` once in the project, so `act/issues/` stays out of git. For settings and the `act/` folder, see [configuration.md](configuration.md).
+For settings and the workspace, see [configuration.md](configuration.md).
 
 ## Set up an API key
 
@@ -65,9 +65,16 @@ Never put a key in `.env.example` or in any `config.json`. Both can be committed
 /act-sdlc:translate-issue https://linear.app/actu-al/issue/ACT-130/database-structure-audit
 /act-sdlc:translate-issue ACT-130 --lang in
 /act-sdlc:translate-issue ACT-130 --force
+/act-sdlc:translate-issue ACT-130 --summary
 ```
 
-The translator skips the API call when the existing translation in that language was made from the issue's current revision (same `updated_at`). `--force` translates anyway. Each language gets its own file, so `ACT-130.id.md` and `ACT-130.in.md` can sit side by side.
+The translator skips the API call when the existing translation in that language was made from the issue's current revision (same `updated_at`). `--force` translates anyway.
+
+The full translation is shown in chat, and also saved to `~/.act/issues/<KEY>.<lang>.md`. Add `--summary` to show only a 2 to 3 line summary in chat. Runs started by auto-translate always show the summary only, so the task you asked for stays in focus. Each language gets its own file, so `ACT-130.id.md` and `ACT-130.in.md` can sit side by side.
+
+## RFC translations
+
+Every RFC that `/act-sdlc:to-spec` writes is also translated into your `translate.language`, and kept locally in `~/.act/rfc/<KEY>.<lang>.md`. Linear only gets the English version. Open it with `/act-sdlc:open <KEY>` (add `--print` to read it in chat, or `--en` for the English copy). If your language is English, nothing is translated.
 
 ## Choose a language
 
@@ -96,7 +103,6 @@ To use a language for one run, pass `--lang`. To change your default, set `trans
 
 ```
 /act-sdlc:config set translate.language in             # you, every project
-/act-sdlc:config set translate.language jp --project   # the team, this project
 ```
 
 See [which setting wins](configuration.md#which-setting-wins).
@@ -107,7 +113,7 @@ To add a language, add a row to `LANGUAGES` in `scripts/languages.mjs`.
 
 ```
 /act-sdlc:config set translate.auto true            # on for you, every project
-/act-sdlc:config set translate.auto false --local   # off for you, in this project
+/act-sdlc:config set translate.auto false           # off again
 ```
 
 For one shell session, use `SDLC_AUTO_TRANSLATE=1 claude` (on) or `SDLC_AUTO_TRANSLATE=0 claude` (off).
@@ -127,7 +133,7 @@ Then run `/act-sdlc:setup` to add that provider's key.
 To call the script directly:
 
 ```bash
-node scripts/translate.mjs --in issue.md --provider claude              # writes act/issues/<key>.<lang>.md
+node scripts/translate.mjs --in issue.md --provider claude              # writes ~/.act/issues/<key>.<lang>.md
 node scripts/translate.mjs --in issue.md --out issue.in.md --lang in   # explicit output path
 cat issue.md | node scripts/translate.mjs                               # --in is optional; stdin works too
 ```

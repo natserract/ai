@@ -1,7 +1,7 @@
 ---
 name: translate-issue
-description: Translate a Linear issue (title, description, comments) into another language, Bahasa Indonesia by default, chosen by country code (id, in, my, jp, ...), and save it to act/issues/<KEY>.<code>.md in the project. Use for "translate ACT-130", "terjemahkan issue ini", a pasted linear.app issue URL with a translation request, or when the act-sdlc auto-translate hook asks for it.
-argument-hint: <ISSUE-KEY | linear issue URL> [--lang <code>] [--force]
+description: Translate a Linear issue (title, description, comments) into another language, Bahasa Indonesia by default, chosen by country code (id, in, my, jp, ...), and save it to ~/.act/issues/<KEY>.<code>.md in your workspace. Use for "translate ACT-130", "terjemahkan issue ini", a pasted linear.app issue URL with a translation request, or when the act-sdlc auto-translate hook asks for it.
+argument-hint: <ISSUE-KEY | linear issue URL> [--lang <code>] [--force] [--summary]
 allowed-tools: Bash(node:*) Read mcp__claude_ai_Linear__get_issue mcp__claude_ai_Linear__list_comments mcp__linear__get_issue mcp__linear__list_comments
 ---
 
@@ -16,6 +16,7 @@ The argument is an issue key such as `ACT-130`, or a URL such as `https://linear
 Pass these through to the translator unchanged when given:
 - `--lang <code>`: the target language by country code, such as `id` (Indonesian) or `in` (Hindi). Without it, the translator uses the configured `translate.language` (see `/act-sdlc:config`). If the user asks which codes exist, run `node "${CLAUDE_PLUGIN_ROOT}/scripts/translate.mjs" --list-languages`.
 - `--force`: translate even if the existing translation is current.
+- `--summary`: show only a short summary in chat, not the full translation. This one is for this skill only; don't pass it to the translator.
 
 ## 2. Fetch the issue from Linear
 
@@ -25,7 +26,7 @@ If no Linear MCP tool exists, or it reports that authentication is needed, stop.
 
 ## 3. Translate
 
-Build the issue as Markdown in this format, leaving out any field that is empty. Pipe it into the translator with a quoted heredoc. Run it from the project directory, because the translator finds the project's `act/` folder and config from there. Add `--lang <code>` and `--force` only if the user gave them.
+Build the issue as Markdown in this format, leaving out any field that is empty. Pipe it into the translator with a quoted heredoc. Add `--lang <code>` and `--force` only if the user gave them.
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/translate.mjs" [--lang <code>] [--force] <<'SDLC_ISSUE_EOF'
@@ -54,7 +55,7 @@ updated_at: <issue updatedAt>
 SDLC_ISSUE_EOF
 ```
 
-The translator writes `act/issues/<KEY>.<lang>.md` in the project root and prints the path. If the existing translation came from the same `updated_at`, it prints `current: <path>` and skips the API call.
+The translator writes `~/.act/issues/<KEY>.<lang>.md` in your workspace, outside every repo, and prints the path. If the existing translation was made from exactly the same source text, it prints `current: <path>` and skips the API call. A new comment or an edit counts as a change.
 
 If the script fails:
 - **Missing API key:** show its error and tell the user to run `/act-sdlc:setup`.
@@ -65,8 +66,13 @@ Do not translate the issue yourself as a fallback: the team chose an external mo
 
 ## 4. Report
 
-If the output was `current:`, say the translation is already up to date and give its path.
+Read the translation file at the path the script printed. For a `current:` result, that's the existing file.
 
-Otherwise, give the output path, the language, provider, and model from the script's output, and a summary of the issue in the target language in 2 to 3 lines. Do not paste the whole translation into chat.
+By default, **show the full translation in chat**:
+1. One line with the source: the language, provider, and model (or "already up to date"), and the file path.
+2. The translated Markdown exactly as written in the file, without the frontmatter block at the top. Don't summarize it, shorten it, or re-translate it.
 
-If the project has no `act/config.json` yet, mention once that `/act-sdlc:init` sets up the project folder so `act/issues/` stays out of git.
+Show only a 2 to 3 line summary in the target language, plus the file path, when either of these is true:
+- the user passed `--summary`;
+- this run was started by the act-sdlc auto-translate hook rather than requested directly, so the user's actual task stays in focus.
+
