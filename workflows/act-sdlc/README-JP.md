@@ -37,7 +37,7 @@ claude plugin install act-sdlc@actual
 | 5. 確認 | `/act-sdlc:verify ACT-95` | テスト、設計、セキュリティを確認し、合格か不合格かを RFC に記録します。 |
 | 6. リリース | *(Linear上)* | リリースを行い、Issue を **Done/Released (完了/リリース済み)** に移動させます。 |
 
-迷ったときは？ いつでも `/act-sdlc:status ACT-95` を実行してください。Issue の現在の状況と、次に行うべきことを教えてくれます。
+迷ったときは？ `/act-sdlc:help` でコマンド一覧とセットアップの状態を確認するか、`/act-sdlc:status ACT-95` で Issue の現在の状況と次に行うべきことを確認してください。
 
 ## コマンド
 
@@ -66,6 +66,7 @@ claude plugin install act-sdlc@actual
 | `/act-sdlc:init` | ワークスペース `~/.act/` を作成します (マシンごとに1回)。 |
 | `/act-sdlc:setup` | 翻訳 API キーを追加または確認します。 |
 | `/act-sdlc:config` | 設定を表示または変更します。 |
+| `/act-sdlc:help` | すべてのコマンドの一覧表示、セットアップの確認、現在のリポジトリに合わせた次の一手の提案を行います。`/act-sdlc:help start` で1つのコマンドを詳しく説明します。 |
 
 `<issue>` は `ACT-95` のような Issue キー、または Linear Issue の URL を指します。
 

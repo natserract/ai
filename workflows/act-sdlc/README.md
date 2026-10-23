@@ -38,7 +38,7 @@ claude plugin install act-sdlc@actual
 | 5. Check | `/act-sdlc:verify ACT-95` | Checks tests, design, and security, and records pass or fail in the RFC |
 | 6. Release | *(in Linear)* | Ship it, then move the issue to **Done/Released** |
 
-Lost? Run `/act-sdlc:status ACT-95` at any time. It tells you where the issue is and what to do next.
+Lost? Run `/act-sdlc:help` for every command and a check of your setup, or `/act-sdlc:status ACT-95` to see where an issue is and what to do next.
 
 ## Commands
 
@@ -67,6 +67,7 @@ Lost? Run `/act-sdlc:status ACT-95` at any time. It tells you where the issue is
 | `/act-sdlc:init` | Create your workspace `~/.act/` (once per machine) |
 | `/act-sdlc:setup` | Add or check your translation API key |
 | `/act-sdlc:config` | Show or change your settings |
+| `/act-sdlc:help` | List every command, check your setup, and get a suggestion for the repo you're in. `/act-sdlc:help start` explains one command |
 
 `<issue>` is an issue key such as `ACT-95`, or a Linear issue URL.
 

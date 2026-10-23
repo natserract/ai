@@ -38,7 +38,7 @@ claude plugin install act-sdlc@actual
 | 5. Periksa (Verify) | `/act-sdlc:verify ACT-95` | Memeriksa tes, desain, dan keamanan, serta mencatat hasil lulus atau gagal di RFC |
 | 6. Rilis | *(di Linear)* | Rilis fiturnya, lalu pindahkan issue ke **Done/Released (Selesai/Dirilis)** |
 
-Bingung? Jalankan `/act-sdlc:status ACT-95` kapan saja. Perintah ini memberi tahu Anda di mana posisi issue dan apa yang harus dilakukan selanjutnya.
+Bingung? Jalankan `/act-sdlc:help` untuk melihat semua perintah dan mengecek setup Anda, atau `/act-sdlc:status ACT-95` untuk melihat posisi issue dan apa yang harus dilakukan selanjutnya.
 
 ## Perintah
 
@@ -67,6 +67,7 @@ Bingung? Jalankan `/act-sdlc:status ACT-95` kapan saja. Perintah ini memberi tah
 | `/act-sdlc:init` | Membuat ruang kerja Anda `~/.act/` (sekali per mesin) |
 | `/act-sdlc:setup` | Menambahkan atau memeriksa kunci API terjemahan Anda |
 | `/act-sdlc:config` | Menampilkan atau mengubah pengaturan Anda |
+| `/act-sdlc:help` | Melihat semua perintah, mengecek setup Anda, dan mendapat saran untuk repositori yang sedang dibuka. `/act-sdlc:help start` menjelaskan satu perintah |
 
 `<issue>` adalah kunci issue seperti `ACT-95`, atau URL issue Linear.
 
