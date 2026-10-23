@@ -1,0 +1,40 @@
+#!/bin/sh
+# Refuse a commit that changes a plugin without raising its version.
+#
+# Claude Code caches each installed plugin by the "version" in its plugin.json. If the
+# files change but the version doesn't, everyone who installed from GitHub keeps the old
+# copy. So any staged change under workflows/<plugin>/ must come with a higher version.
+# The plugin's README*.md files are exempt: Claude Code doesn't load them.
+#
+# Enable once per clone:  git config core.hooksPath .githooks
+# Skip in an emergency:   git commit --no-verify
+
+status=0
+
+plugins=$(git diff --cached --name-only --diff-filter=ACMRD -- 'workflows/*' \
+  | grep -vE '^workflows/[^/]+/README[^/]*\.md$' \
+  | cut -d/ -f2 | sort -u)
+
+for plugin in $plugins; do
+  manifest="workflows/$plugin/.claude-plugin/plugin.json"
+  git cat-file -e ":$manifest" 2>/dev/null || continue   # not a plugin, or being removed
+
+  version_of() {
+    git show "$1" 2>/dev/null | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1
+  }
+  new=$(version_of ":$manifest")
+  old=$(version_of "HEAD:$manifest")
+
+  [ -z "$old" ] && continue   # new plugin: nothing to compare against
+
+  if [ "$new" = "$old" ]; then
+    echo "pre-commit: workflows/$plugin changed, but its version is still $old." >&2
+    echo "  Raise \"version\" in $manifest (e.g. to the next minor version), then commit again." >&2
+    status=1
+  elif [ "$(printf '%s\n%s\n' "$old" "$new" | sort -V | tail -n 1)" != "$new" ]; then
+    echo "pre-commit: $plugin's version went down ($old → $new). Use a higher version." >&2
+    status=1
+  fi
+done
+
+exit $status

@@ -36,6 +36,14 @@ cd ai
 claude --plugin-dir ./workflows/act-sdlc
 ```
 
+**Raise the plugin's `version` with every change.** Claude Code caches each installed plugin by its version. If the files change but the version doesn't, everyone keeps the old copy. A pre-commit hook enforces this; turn it on once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+It refuses a commit that changes `workflows/<plugin>/` (other than its READMEs) without a higher `version` in that plugin's `plugin.json`.
+
 Before pushing plugin changes, check both the marketplace and the plugin:
 
 ```bash
